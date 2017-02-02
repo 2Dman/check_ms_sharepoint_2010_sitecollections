@@ -1,5 +1,5 @@
 # Script name:   	check_sharepoint2010_sitecollection_sizes.ps1
-# Version:			v1.6.6
+# Version:			v1.6.7
 # Created on:    	25/11/2014																			
 # Author:        	JDC,WRI
 # Purpose:       	Checks Microsoft Sharepoint 2010 site collections for size, reporting site
@@ -8,7 +8,9 @@
 # 	25/11/2014 => Script created - JDC
 #	03/06/2015 => Sum of usage is reported as a counter - JDC
 #	03/06/2015 => Added perfdata for webapps - JDC
-#   30/11/2015 => Changed Default Exitcode to 3, added code for check on 0 = OK. - WRI
+#       30/11/2015 => Changed Default Exitcode to 3, added code for check on 0 = OK. - WRI
+#	02/02/2017 => When creating new site, there is no usage yet, so we filter these sites out - WRI
+#
 # Copyright:
 #	This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public 
 #	License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
@@ -160,7 +162,7 @@ Function Check-MS-Shp2010-SiteCollections {
     $taskstruct.OutputString = $Result + ' : ' + (($CriticalList + $WarnList) -join ';') + '|' + ((
 	
 	Get-SPWebApplication | % {
-		$size = ($_.sites | select -exp usage | select -exp storage | measure -sum).sum / 1GB
+		$size = ($_.sites | where {$_.usage -ne $null} | select -exp usage | select -exp storage | measure -sum).sum / 1GB
 		"'$($_.url -replace '^http[s]*://(.*)/$','$1')'=$($size)G"
 	}
     ) -join ' ')
